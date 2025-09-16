@@ -161,5 +161,39 @@ pytest -q
 python -m src.stock_analysis_cli --ticker AAPL --start 2020-01-01 --end 2025-01-01
 ```
 
+![Local Test Passed](/screenshot1.png)
 
+### 7.3 Docker — Build, Run, Test (Reproducible)
+
+```
+# build image
+docker build -t ids706-stocks .
+
+# run CLI inside container (prints JSON)
+docker run --rm ids706-stocks
+
+# run tests inside container
+docker run --rm ids706-stocks pytest -q
+
+# (optional) show the image
+docker images | grep ids706-stocks
+```
+![Docker CLI JSON](/screenshot2.png)
+
+![Docker test passed](/screenshot3.png)
+
+![Docker image](/screenshot4.png)
+
+### 7.4 Makefile
+
+```
+make install      
+make test          
+make cov         
+make run          
+
+make docker-build  
+make docker-run    
+make docker-test   
+```
 
