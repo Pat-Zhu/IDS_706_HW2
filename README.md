@@ -126,4 +126,40 @@ print("Accuracy:", log_reg.score(X_test, y_test))
 I plotted Close, MA5/MA10, and Bollinger Bands to visually validate the indicators and observe volatility regimes.
 The graph is a seperate file in this repository.
 
+## 7. Week 3 Reproducible & Testable Setup
+
+### 7.1 Repo Structure
+
+```text
+IDS_706_HW2/
+├─ src/
+│  ├─ __init__.py
+│  ├─ stock_utils.py
+│  └─ stock_analysis_cli.py
+├─ tests/
+│  ├─ test_stock_utils.py
+│  └─ test_end_to_end.py
+├─ requirements.txt
+├─ Dockerfile
+├─ .dockerignore
+├─ pytest.ini
+├─ Makefile
+└─ README.md
+```
+
+### 7.2 Local (venv) — Install, Test, Run
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# tests
+pytest -q
+
+# CLI: prints a JSON summary (accuracy/rows/signals/…)
+python -m src.stock_analysis_cli --ticker AAPL --start 2020-01-01 --end 2025-01-01
+```
+
+
 
