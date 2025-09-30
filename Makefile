@@ -28,3 +28,13 @@ clean:
 	find . -name "__pycache__" -type d -exec rm -rf {} +
 	rm -rf .pytest_cache
 
+format:
+	docker run --rm -v "$$PWD":/app -w /app python:3.11-slim \
+	  bash -lc "pip install -q black==24.4.2 && black src tests stock_analysis.py"
+
+lint:
+	flake8
+
+check: lint
+	pytest -q
+
