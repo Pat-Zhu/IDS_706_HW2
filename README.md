@@ -1,4 +1,5 @@
 # IDS_706_HW2
+[![CI](https://github.com/Pat-Zhu/IDS_706_HW2/actions/workflows/ci.yml/badge.svg)](https://github.com/Pat-Zhu/IDS_706_HW2/actions/workflows/ci.yml)
 ## 1. Project Overview
 This project downloads daily Apple (AAPL) stock data from the public **Yahoo Finance** API and performs:
 - **Data inspection** with Pandas (`head`, `info`, `describe`, missing/duplicate checks)

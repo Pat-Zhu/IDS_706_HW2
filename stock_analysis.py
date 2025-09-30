@@ -13,10 +13,10 @@ print("Fetching data from Yahoo Finance...")
 data = yf.download("AAPL", start="2020-01-01", end="2025-01-01")
 data.columns = [col[0] if isinstance(col, tuple) else col for col in data.columns]
 
-# 2) Inspect the Data  
+# 2) Inspect the Data
 print("\n--- Head ---\n", data.head())
 print("\n--- Info ---")
-data.info()  
+data.info()
 print("\n--- Describe (numeric) ---\n", data.describe().T)
 
 # Checking Missing value
@@ -49,7 +49,7 @@ data["Target"] = (data["Tomorrow"] > data["Close"]).astype(int)
 data["Return"] = data["Close"].pct_change()
 data = data.dropna()
 
-# 5) Basic Filtering 
+# 5) Basic Filtering
 filter_mask = (data["RSI14"] < 30) & (data["Close"] > data["MA10"])
 filtered = data.loc[filter_mask]
 print(f"\n--- Filter result: RSI<30 & Close>MA10 --- {filtered.shape[0]} rows")
@@ -59,20 +59,19 @@ print(filtered[["Close", "MA10", "RSI14"]].head())
 # 6a. Group by year
 yearly_stats = (
     data.assign(Year=data.index.year)
-        .groupby("Year")
-        .agg(
-            mean_return=("Return", "mean"),
-            days=("Return", "count"),
-            up_ratio=("Target", "mean"),
-            avg_volume=("Volume", "mean"),
-        )
+    .groupby("Year")
+    .agg(
+        mean_return=("Return", "mean"),
+        days=("Return", "count"),
+        up_ratio=("Target", "mean"),
+        avg_volume=("Volume", "mean"),
+    )
 )
 print("\n--- Yearly stats (groupby) ---\n", yearly_stats)
 
 # 6b. By month
-monthly_stats = (
-    data.resample("M")
-        .agg(mean_return=("Return", "mean"), trading_days=("Return", "count"))
+monthly_stats = data.resample("M").agg(
+    mean_return=("Return", "mean"), trading_days=("Return", "count")
 )
 print("\n--- Monthly stats (resample) ---\n", monthly_stats.head())
 
@@ -95,7 +94,9 @@ plt.figure(figsize=(12, 6))
 plt.plot(data.index, data["Close"], label="Close Price")
 plt.plot(data.index, data["MA5"], label="MA5")
 plt.plot(data.index, data["MA10"], label="MA10")
-plt.fill_between(data.index, data["BB_Upper"], data["BB_Lower"], color='gray', alpha=0.3, label="Bollinger Bands")
+plt.fill_between(
+    data.index, data["BB_Upper"], data["BB_Lower"], color="gray", alpha=0.3, label="Bollinger Bands"
+)
 plt.title("Apple Stock with Technical Indicators")
 plt.xlabel("Date")
 plt.ylabel("Price")

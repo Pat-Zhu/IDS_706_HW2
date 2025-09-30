@@ -1,0 +1,6 @@
+[flake8]
+max-line-length = 100
+ignore = E203,W503
+exclude = .venv,.git,__pycache__,.pytest_cache
+per-file-ignores =
+    stock_analysis.py: E501,F401,W291,E123

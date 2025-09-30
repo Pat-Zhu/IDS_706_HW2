@@ -5,6 +5,7 @@ import yfinance as yf
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 
+
 def load_data(ticker: str, start: str, end: str) -> pd.DataFrame:
     df = yf.download(ticker, start=start, end=end, progress=False, auto_adjust=True)
     df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
@@ -16,6 +17,7 @@ def load_data(ticker: str, start: str, end: str) -> pd.DataFrame:
         if col not in df.columns:
             raise ValueError(f"Missing column: {col}")
     return df
+
 
 def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     d = df.copy()
@@ -35,31 +37,41 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     d["Return"] = d["Close"].pct_change()
     return d
 
+
 def define_target(df: pd.DataFrame) -> pd.DataFrame:
     d = df.copy()
     d["Tomorrow"] = d["Close"].shift(-1)
     d["Target"] = (d["Tomorrow"] > d["Close"]).astype(int)
     return d.dropna()
 
+
 def oversold_bounce_filter(df: pd.DataFrame) -> pd.DataFrame:
     return df[(df["RSI14"] < 30) & (df["Close"] > df["MA10"])]
 
+
 def yearly_stats(df: pd.DataFrame) -> pd.DataFrame:
-    return (df.assign(Year=df.index.year)
-              .groupby("Year")
-              .agg(mean_return=("Return", "mean"),
-                   days=("Return", "count"),
-                   up_ratio=("Target", "mean"),
-                   avg_volume=("Volume", "mean")))
+    return (
+        df.assign(Year=df.index.year)
+        .groupby("Year")
+        .agg(
+            mean_return=("Return", "mean"),
+            days=("Return", "count"),
+            up_ratio=("Target", "mean"),
+            avg_volume=("Volume", "mean"),
+        )
+    )
+
 
 def monthly_stats(df: pd.DataFrame) -> pd.DataFrame:
-    return df.resample("ME").agg(mean_return=("Return", "mean"),
-                                trading_days=("Return", "count"))
+    return df.resample("ME").agg(mean_return=("Return", "mean"), trading_days=("Return", "count"))
 
-FEATURES = ["Open","High","Low","Volume","MA5","MA10","RSI14","BB_Upper","BB_Lower"]
+
+FEATURES = ["Open", "High", "Low", "Volume", "MA5", "MA10", "RSI14", "BB_Upper", "BB_Lower"]
+
 
 def get_xy(df: pd.DataFrame):
     return df[FEATURES], df["Target"]
+
 
 def train_logreg(X: pd.DataFrame, y: pd.Series, random_state: int = 42):
     if y.nunique() < 2:
@@ -71,6 +83,7 @@ def train_logreg(X: pd.DataFrame, y: pd.Series, random_state: int = 42):
     model.fit(X_train, y_train)
     acc = model.score(X_test, y_test)
     return model, float(acc)
+
 
 def run_pipeline(ticker="AAPL", start="2020-01-01", end="2025-01-01") -> dict:
     df = load_data(ticker, start, end)
