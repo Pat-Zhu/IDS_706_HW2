@@ -247,4 +247,43 @@ python -m src.stock_analysis_cli --ticker AAPL --start 2020-01-01 --end 2025-01-
 ```
 
 Results:
+
 ![new output](/output_innovation.png)
+
+### 8.7 Results – Interpretation & Takeaways
+
+**Run summary (example):**
+| Metric            | Value (example) |
+|-------------------|-----------------|
+| Accuracy          | ~0.512          |
+| Rows              | 1238            |
+| RSI<30 & Close>MA10 signals | 3     |
+| Annualized return | ~0.288          |
+| Annualized vol    | ~0.318          |
+| Sharpe (≈ ret/vol)| ~0.905          |
+
+**What these numbers mean**
+
+- **Accuracy ≈ 51%**  
+  Predicting **next-day** up/down is very hard; a plain logistic model on a few technical features is close to a coin flip. That’s expected for a low-signal, short-horizon task.
+
+- **Signals = 3 (oversold bounce rule)**  
+  The RSI<30 & Close>MA10 filter is **very conservative** → few trades. Good for illustrating filtering, but sparse for a strategy. Consider relaxing the condition or adding more rules if you want more coverage.
+
+- **Annualized return ≈ 28.8% vs. vol ≈ 31.8% → Sharpe ≈ 0.9**  
+  These are computed from **daily close-to-close returns** over the sample (no risk-free rate, no transaction costs).  
+  - A Sharpe near **1.0** is respectable for a naive, long-only series during a period when AAPL was strong.  
+  - It reflects the **underlying asset’s** risk/return, **not** the classifier’s trading performance.
+
+**Caveats**
+
+- No transaction costs/slippage; no shorting; no position sizing; no risk-free adjustment.  
+- Single ticker, single horizon, and simple train/test split (time leakage risk if not careful).  
+- Technical indicators are unscaled and minimal; model is not tuned.
+
+**What improved this week**
+
+- Reproducibility: tests in CI (Black/Flake8/Pytest) and Docker ensure anyone can run the pipeline.  
+- Maintainability: refactors (rename/extract) and modular indicators (`_compute_rsi`, `_compute_bbands`).  
+- Insight: risk metrics (`ann_return`, `ann_volatility`, `sharpe`) give a **portfolio-style** view of the data.
+
