@@ -1,5 +1,8 @@
-import argparse, json
+import argparse
+import json
+
 from .stock_utils import run_pipeline
+
 
 def main():
     p = argparse.ArgumentParser()
@@ -10,6 +13,7 @@ def main():
     out = run_pipeline(args.ticker, args.start, args.end)
     print("=== Pipeline Summary ===")
     print(json.dumps(out, indent=2))
+
 
 if __name__ == "__main__":
     main()
