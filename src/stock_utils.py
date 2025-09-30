@@ -19,21 +19,34 @@ def load_data(ticker: str, start: str, end: str) -> pd.DataFrame:
     return df
 
 
+def _compute_rsi(close: pd.Series, period: int = 14) -> pd.Series:
+    """Relative Strength Index over the closing price."""
+    delta = close.diff()
+    gain = delta.where(delta > 0, 0.0)
+    loss = -delta.where(delta < 0, 0.0)
+    avg_gain = gain.rolling(period).mean()
+    avg_loss = loss.rolling(period).mean().replace(0, np.nan)
+    rs = avg_gain / avg_loss
+    return 100 - (100 / (1 + rs))
+
+
+def _compute_bbands(close: pd.Series, window: int = 20, k: float = 2.0):
+    """Bollinger Bands (mid, upper, lower)."""
+    mid = close.rolling(window).mean()
+    std = close.rolling(window).std()
+    upper = mid + k * std
+    lower = mid - k * std
+    return mid, upper, lower
+
+
 def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
+    """Add MA5/MA10, RSI(14), and Bollinger Bands."""
     d = df.copy()
     d["MA5"] = d["Close"].rolling(5).mean()
     d["MA10"] = d["Close"].rolling(10).mean()
-    delta = d["Close"].diff()
-    gain = delta.where(delta > 0, 0.0)
-    loss = -delta.where(delta < 0, 0.0)
-    avg_gain = gain.rolling(14).mean()
-    avg_loss = loss.rolling(14).mean().replace(0, np.nan)
-    rs = avg_gain / avg_loss
-    d["RSI14"] = 100 - (100 / (1 + rs))
-    d["BB_Mid"] = d["Close"].rolling(20).mean()
-    std = d["Close"].rolling(20).std()
-    d["BB_Upper"] = d["BB_Mid"] + 2 * std
-    d["BB_Lower"] = d["BB_Mid"] - 2 * std
+    d["RSI14"] = _compute_rsi(d["Close"], period=14)
+    d["BB_Mid"], d["BB_Upper"], d["BB_Lower"] = _compute_bbands(d["Close"], window=20, k=2.0)
+    # NEW: tests expect Return right after add_indicators
     d["Return"] = d["Close"].pct_change()
     return d
 
@@ -42,6 +55,7 @@ def define_target(df: pd.DataFrame) -> pd.DataFrame:
     d = df.copy()
     d["Tomorrow"] = d["Close"].shift(-1)
     d["Target"] = (d["Tomorrow"] > d["Close"]).astype(int)
+    d["Return"] = d["Close"].pct_change()
     return d.dropna()
 
 
@@ -66,11 +80,19 @@ def monthly_stats(df: pd.DataFrame) -> pd.DataFrame:
     return df.resample("ME").agg(mean_return=("Return", "mean"), trading_days=("Return", "count"))
 
 
-FEATURES = ["Open", "High", "Low", "Volume", "MA5", "MA10", "RSI14", "BB_Upper", "BB_Lower"]
-
-
 def get_xy(df: pd.DataFrame):
-    return df[FEATURES], df["Target"]
+    feature_columns = [
+        "Open",
+        "High",
+        "Low",
+        "Volume",
+        "MA5",
+        "MA10",
+        "RSI14",
+        "BB_Upper",
+        "BB_Lower",
+    ]
+    return df[feature_columns], df["Target"]
 
 
 def train_logreg(X: pd.DataFrame, y: pd.Series, random_state: int = 42):
