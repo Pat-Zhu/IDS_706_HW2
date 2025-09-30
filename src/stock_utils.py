@@ -5,6 +5,18 @@ import yfinance as yf
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 
+FEATURE_FOR_MODEL = [
+    "Open",
+    "High",
+    "Low",
+    "Volume",
+    "MA5",
+    "MA10",
+    "RSI14",
+    "BB_Upper",
+    "BB_Lower",
+]
+
 
 def load_data(ticker: str, start: str, end: str) -> pd.DataFrame:
     df = yf.download(ticker, start=start, end=end, progress=False, auto_adjust=True)
@@ -81,18 +93,7 @@ def monthly_stats(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_xy(df: pd.DataFrame):
-    feature_columns = [
-        "Open",
-        "High",
-        "Low",
-        "Volume",
-        "MA5",
-        "MA10",
-        "RSI14",
-        "BB_Upper",
-        "BB_Lower",
-    ]
-    return df[feature_columns], df["Target"]
+    return df[FEATURE_FOR_MODEL], df["Target"]
 
 
 def train_logreg(X: pd.DataFrame, y: pd.Series, random_state: int = 42):
