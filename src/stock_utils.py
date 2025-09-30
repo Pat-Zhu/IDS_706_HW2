@@ -18,6 +18,17 @@ FEATURE_FOR_MODEL = [
 ]
 
 
+def metrics_summary(df: pd.DataFrame) -> dict:
+    """Annualized return/volatility and Sharpe-like ratio from daily returns."""
+    r = df["Return"].dropna()
+    if r.empty:
+        return {"ann_return": float("nan"), "ann_volatility": float("nan"), "sharpe": float("nan")}
+    ann_return = float(r.mean() * 252)
+    ann_vol = float(r.std() * np.sqrt(252))
+    sharpe = float(ann_return / ann_vol) if ann_vol > 0 else float("nan")
+    return {"ann_return": ann_return, "ann_volatility": ann_vol, "sharpe": sharpe}
+
+
 def load_data(ticker: str, start: str, end: str) -> pd.DataFrame:
     df = yf.download(ticker, start=start, end=end, progress=False, auto_adjust=True)
     df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
@@ -123,4 +134,5 @@ def run_pipeline(ticker="AAPL", start="2020-01-01", end="2025-01-01") -> dict:
         "signals": int(len(bounce)),
         "yearly_index": list(y_stats.index.astype(int)),
         "monthly_rows": int(len(m_stats)),
+        "metrics": metrics_summary(df),
     }
