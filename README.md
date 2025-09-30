@@ -198,3 +198,53 @@ make docker-run
 make docker-test   
 ```
 
+## 8. Week 4 – Automation, CI & Refinements
+
+This week focuses on CI, refactoring (VS Code rename/extract), code quality tooling, and a small innovation to enrich insights.
+
+### 8.1 Continuous Integration (GitHub Actions)
+
+- CI runs on every push and pull request: Black check, Flake8, and Pytest + coverage.
+- Workflow file: `.github/workflows/ci.yml`.
+
+![CI Success (GitHub Actions)](/workflow_success.png)
+
+
+### 8.2 Code Quality (Black / Flake8 via Makefile)
+
+
+```
+make format   # run Black in a container (avoids local Python 3.12.5 issue)
+make lint     # run Flake8
+make check    # lint + tests (pytest -q)
+```
+
+Results:
+![quality check result](/code_quality.png)
+
+
+### 8.3 Refactoring Evidence (VS Code Rename / Extract)
+
+- Used VS Code **Rename Symbol** (F2 / fn+F2 on Mac) and **Extract variable/method** to clean up code.
+- Extracted the model feature list as a module-level constant (reused across files).
+- Kept indicator logic modular via `_compute_rsi` and `_compute_bbands`.
+
+![VS Code Rename / Extract](/rename.png)
+![Commit Diff (Refactor Before/After)](/rename_result.png)
+
+### 8.4 Innovation – Risk Metrics (Annualized Return / Volatility / Sharpe)
+
+In addition to classification accuracy, the pipeline now returns simple risk metrics computed from daily returns:
+
+- `ann_return = mean(daily_return) * 252`
+- `ann_volatility = std(daily_return) * sqrt(252)`
+- `sharpe = ann_return / ann_volatility` (if volatility > 0)
+
+**How to run (CLI):**
+
+```bash
+python -m src.stock_analysis_cli --ticker AAPL --start 2020-01-01 --end 2025-01-01
+```
+
+Results:
+![new output](/output_innovation.png)
